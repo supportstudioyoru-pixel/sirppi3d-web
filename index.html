@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sirppi3D Web</title>
+<style>
+:root{--bg:#1c1c1e;--panel:#232326;--line:#3a3a3e;--fg:#e8e8ea;--mute:#9a9aa0;--acc:#f28a1e}
+@media (prefers-color-scheme: light){:root{--bg:#e9e9ec;--panel:#f6f6f8;--line:#cfcfd4;--fg:#1c1c1e;--mute:#6a6a72}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 -apple-system,"Hiragino Sans","Noto Sans JP",system-ui,sans-serif}
+#app{display:flex;height:100%}
+#view{flex:1;position:relative;min-width:0;background:linear-gradient(#a8a8a8,#6b6b6b)}
+#view canvas{display:block;width:100%;height:100%}
+#drop{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#222;opacity:.75;text-align:center;padding:16px}
+#drop.hide{display:none}
+#drop.over{outline:3px dashed var(--acc);outline-offset:-12px}
+#drop small{opacity:.8}
+#busy{position:absolute;left:12px;top:12px;background:rgba(0,0,0,.65);color:#fff;padding:6px 8px 6px 12px;border-radius:8px;display:none;align-items:center;gap:10px;z-index:4}
+#busy button{padding:2px 10px;font-size:12px}
+#split{position:absolute;top:0;bottom:0;width:28px;margin-left:-14px;cursor:ew-resize;touch-action:none;display:none;z-index:3}
+#split:before{content:'';position:absolute;left:13px;top:0;bottom:0;width:2px;background:#fff;box-shadow:0 0 4px #0008}
+#split i{position:absolute;left:2px;top:50%;width:24px;height:24px;margin-top:-12px;border-radius:50%;background:#fff;box-shadow:0 0 6px #0009;text-align:center;font:12px/24px system-ui;color:#333;font-style:normal}
+.lab{position:absolute;bottom:8px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:2px 8px;border-radius:6px;display:none;z-index:2;pointer-events:none}
+.top{display:flex;justify-content:flex-end;margin-bottom:8px}
+.top button{padding:2px 10px;font-size:12px}
+input[type=text]{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:3px 6px;font:inherit;width:110px}
+aside{width:320px;max-width:42vw;overflow:auto;padding:12px;background:var(--bg);border-left:1px solid var(--line)}
+section{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+h2{font-size:12px;margin:0 0 6px;color:var(--mute);font-weight:600}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:4px 0}
+.row span:last-child{font-variant-numeric:tabular-nums}
+input[type=range]{width:100%}
+input[type=number],select{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:3px 6px;font:inherit}
+input[type=number]{width:110px;text-align:right}
+button{background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:7px;padding:6px 12px;font:inherit;cursor:pointer}
+button.pri{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+button:disabled{opacity:.4;cursor:default}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.help{position:relative;display:inline-block}
+.help>button{width:22px;height:22px;padding:0;border-radius:50%;line-height:20px;color:var(--mute)}
+.help .pop{display:none;position:absolute;right:0;top:28px;width:250px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;z-index:5;font-size:13px;box-shadow:0 4px 16px #0006}
+.help.open .pop{display:block}
+.note{color:var(--mute);font-size:12px}
+.err{color:#ff6b5e;font-size:12px}
+footer{color:var(--mute);font-size:11px;padding:4px 2px}
+@media (max-width:700px){#app{flex-direction:column}aside{width:auto;max-width:none;height:46%;border-left:0;border-top:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="view">
+    <div id="drop"><b id="t_drop"></b><span id="t_or"></span><small>STL OBJ PLY OFF GLB GLTF USD USDZ</small><input id="file" type="file" hidden accept=".stl,.obj,.ply,.off,.glb,.gltf,.usd,.usda,.usdc,.usdz"></div>
+    <div id="busy"><span id="busytxt"></span><button id="cancel"></button></div>
+    <div class="lab" id="lab_o" style="left:8px"></div><div class="lab" id="lab_w" style="right:8px"></div>
+    <div id="split"><i>◀▶</i></div>
+  </div>
+  <aside>
+    <div class="top"><button id="lang"></button></div>
+    <section>
+      <h2 id="h_src"></h2>
+      <div class="row"><span id="t_name">—</span></div>
+      <div class="row"><span id="t_tri"></span><span id="v_tri">—</span></div>
+      <div class="row"><span id="t_size"></span><span id="v_size">—</span></div>
+      <div class="err" id="err"></div>
+    </section>
+    <section>
+      <h2 id="h_tgt"></h2>
+      <input id="slider" type="range" min="0" max="1000" value="1000" step="1" disabled>
+      <div class="row"><span id="t_target"></span><input id="target" type="number" min="4" step="1000" disabled></div>
+      <div class="row"><span id="t_red"></span><span id="v_red">—</span></div>
+      <div class="row"><span><button id="match" disabled></button></span>
+        <span class="help" id="help"><button id="qbtn" aria-label="help">?</button>
+          <span class="pop"><span id="t_helpmatch"></span><br><a id="link" target="_blank" rel="noopener"></a></span></span></div>
+      <div class="row"><span><button id="matchk" disabled></button></span>
+        <span class="help" id="helpk"><button id="qbtnk" aria-label="help">?</button>
+          <span class="pop"><span id="t_helpmatchk"></span><br><a id="linkk" target="_blank" rel="noopener"></a></span></span></div>
+      <div class="row"><span id="t_pred"></span><span id="v_pred">—</span></div>
+    </section>
+    <section>
+      <h2 id="h_out"></h2>
+      <div class="row"><span id="t_fmt"></span><select id="fmt"><option value="0">STL</option><option value="1">OBJ</option><option value="2">GLB</option><option value="3">PLY</option></select></div>
+      <div class="row"><span id="t_unit"></span><select id="unit"><option value="1">mm</option><option value="10">cm</option><option value="1000">m</option><option value="25.4">inch</option></select></div>
+      <div class="row"><span id="t_suf"></span><select id="suf"></select></div>
+      <div class="row" id="sufrow" style="display:none"><span id="t_sufc"></span><input type="text" id="sufc" value="_light"></div>
+      <div class="row"><span id="t_prot"></span><select id="prot"></select></div>
+      <div class="note" id="t_protnote"></div>
+      <div class="row"><label><input type="checkbox" id="lock"> <span id="t_lock"></span></label></div>
+      <div class="row"><label><input type="checkbox" id="fast"> <span id="t_fast"></span></label></div>
+    </section>
+    <section>
+      <h2 id="h_disp"></h2>
+      <div class="seg"><label><input type="checkbox" id="wire"> <span id="t_wire"></span></label>
+      <label><input type="checkbox" id="zup"> Z-up</label>
+      <label><input type="checkbox" id="showorig" disabled> <span id="t_orig"></span></label>
+      <label><input type="checkbox" id="cmp" disabled> <span id="t_cmp"></span></label></div>
+      <div class="row"><span id="t_res"></span><span id="v_res">—</span></div>
+      <div class="row"><span id="t_err"></span><span id="v_err">—</span></div>
+    </section>
+    <div class="seg"><button id="run" class="pri" disabled></button><button id="save" disabled></button><button id="clear" disabled></button></div>
+    <p class="note" id="t_priv"></p>
+    <footer>© 2026 Studio_Yoru · meshoptimizer (MIT)</footer>
+  </aside>
+</div>
+<script src="core_src.js"></script>
+<script src="app.bundle.js"></script>
+</body>
+</html>
