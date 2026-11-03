@@ -24,12 +24,10 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:14px/1.
 #split:before{content:'';position:absolute;left:13px;top:0;bottom:0;width:2px;background:#fff;box-shadow:0 0 4px #0008}
 #split i{position:absolute;left:2px;top:50%;width:24px;height:24px;margin-top:-12px;border-radius:50%;background:#fff;box-shadow:0 0 6px #0009;text-align:center;font:12px/24px system-ui;color:#333;font-style:normal}
 .lab{position:absolute;bottom:8px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:2px 8px;border-radius:6px;display:none;z-index:2;pointer-events:none}
-.apps{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);display:flex;gap:14px;z-index:3}
-.apps a{display:block;width:44px;height:44px;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px #0006;transition:transform .15s}
+.apps{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);display:flex;gap:10px;z-index:3;width:min(520px,calc(100% - 24px))}
+.apps a{display:block;flex:1;min-width:0;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px #0006;transition:transform .15s;line-height:0}
 .apps a:hover{transform:translateY(-2px)}
-.apps img{width:100%;height:100%;display:block}
-.apps #ap_2d{overflow:visible;box-shadow:none}
-.apps #ap_2d img{filter:drop-shadow(0 2px 4px #0006)}
+.apps img{width:100%;height:auto;display:block}
 .top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
 .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px}
 .brand img{width:32px;height:32px;border-radius:7px;display:block}
@@ -62,7 +60,7 @@ footer{color:var(--mute);font-size:11px;padding:4px 2px}
   <div id="view">
     <div id="drop"><b id="t_drop"></b><span id="t_or"></span><small>STL OBJ PLY OFF GLB GLTF USD USDZ</small><input id="file" type="file" hidden accept=".stl,.obj,.ply,.off,.glb,.gltf,.usd,.usda,.usdc,.usdz"></div>
     <div id="busy"><span id="busytxt"></span><button id="cancel"></button></div>
-    <div class="apps"><a id="ap_kuu" target="_blank" rel="noopener"><img src="store-kuu3d.png" alt="Kuu3D"></a><a id="ap_kur" target="_blank" rel="noopener"><img src="store-kururi.png" alt="Kururi Clock"></a><a id="ap_2d" target="_blank" rel="noopener" href="https://2d-render-web.pages.dev/"><img src="store-2drender.png" alt="2D Render"></a></div>
+    <div class="apps"><a id="ap_kuu" target="_blank" rel="noopener"><img src="banner-kuu3d.webp" alt="Kuu3D"></a><a id="ap_kur" target="_blank" rel="noopener"><img src="banner-kururi.webp" alt="Kururi Clock"></a><a id="ap_2d" target="_blank" rel="noopener" href="https://2d-render-web.pages.dev/"><img src="banner-2drender.webp" alt="2D Render"></a></div>
     <div class="lab" id="lab_o" style="left:8px"></div><div class="lab" id="lab_w" style="right:8px"></div>
     <div id="split"><i>◀▶</i></div>
   </div>
